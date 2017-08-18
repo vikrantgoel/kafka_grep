@@ -1,0 +1,34 @@
+<div class="jumbotron">
+    Consumer
+    <hr>
+    <div class="form-group">
+        <label for="consumer_bootstrap_server">Bootstrap Server:</label>
+        <input type="text" class="form-control" id="consumer_bootstrap_server" placeholder="Consumer bootstrap server hostname">
+    </div>
+
+    <div class="form-group">
+        <label for="consumer_kafka_topic">Kafka Topic:</label>
+        <input type="text" class="form-control" id="consumer_kafka_topic" placeholder="Kafka topic to consume from">
+    </div>
+
+    <div class="form-group">
+        <label for="consumer_offset">Offset: </label>
+        <select class="form-control" id="consumer_offset">
+            <option>latest</option>
+            <option>earliest</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="consumer_timeout">Timeout (seconds):</label>
+        <input type="number" class="form-control" id="consumer_timeout" min="0" step="1" data-bind="value:replyNumber" placeholder="Consumer timeout at the end of topic">
+    </div>
+
+    <button type="button" class="btn btn-primary" id="consumer_submit">Consume</button>
+    <button type="button" class="btn" id="consumer_reset">Reset</button>
+
+    <div class="form-group">
+        <label for="consumer_messages">Messages:</label>
+        <textarea class="form-control" rows="5" id="consumer_messages" readonly></textarea>
+    </div>
+</div>

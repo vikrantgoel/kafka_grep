@@ -1,0 +1,12 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-lg-6" >
+            {% include 'includes/_producer.html' %}
+        </div>
+        <div class="col-lg-6" >
+            {% include 'includes/_consumer.html' %}
+        </div>
+    </div>
+{% endblock %}

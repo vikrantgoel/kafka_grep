@@ -1,0 +1,26 @@
+<div class="jumbotron">
+    Producer
+    <hr>
+    <div class="form-group">
+        <label for="producer_bootstrap_server">Bootstrap Server:</label>
+        <input type="text" class="form-control" id="producer_bootstrap_server" placeholder="Producer bootstrap server hostname">
+    </div>
+
+    <div class="form-group">
+        <label for="producer_kafka_topic">Kafka Topic:</label>
+        <input type="text" class="form-control" id="producer_kafka_topic" placeholder="Kafka topic to produce to">
+    </div>
+
+    <div class="form-group">
+        <label for="producer_message">Message:</label>
+        <textarea class="form-control" rows="5" id="producer_message"></textarea>
+    </div>
+
+    <button type="button" class="btn btn-primary" id="producer_submit">Produce</button>
+    <button type="button" class="btn" id="producer_reset">Reset</button>
+
+    <div class="form-group">
+        <label for="producer_messages">Messages:</label>
+        <textarea class="form-control" rows="5" id="producer_messages" readonly></textarea>
+    </div>
+</div>
