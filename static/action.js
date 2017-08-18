@@ -10,6 +10,7 @@ $(document).ready(function() {
     $("#consumer_reset").click(function() {
         $("#consumer_bootstrap_server").val('');
         $("#consumer_kafka_topic").val('');
+        $("#consumer_group_id").val('');
         $("#consumer_timeout").val('');
         $("#consumer_offset").val('latest');
         $("#consumer_messages").val('');
@@ -44,12 +45,16 @@ $(document).ready(function() {
         var consumerKafkaTopic = $("#consumer_kafka_topic").val();
         var consumerOffset = $("#consumer_offset").val();
         var consumerTimeout = $("#consumer_timeout").val() || "0";
+        var consumerGroupId = $("#consumer_group_id").val() || new Date().getTime();
+
+
         $.ajax({
             url: '/consume',
             data: {consumer_bootstrap_server: consumerBootstrapServer,
                    consumer_kafka_topic: consumerKafkaTopic,
                    consumer_offset: consumerOffset,
-                   consumer_timeout: consumerTimeout
+                   consumer_timeout: consumerTimeout,
+                   consumer_group_id: consumerGroupId
                   },
             type: 'POST',
             success: function(response) {
