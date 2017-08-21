@@ -19,14 +19,16 @@
     <div class="form-group">
         <label for="consumer_offset">Offset: </label>
         <select class="form-control" id="consumer_offset">
-            <option>latest</option>
             <option>earliest</option>
+            <option>latest</option>
         </select>
     </div>
 
     <div class="form-group">
-        <label for="consumer_timeout">Timeout (seconds):</label>
-        <input type="number" class="form-control" id="consumer_timeout" min="0" step="1" data-bind="value:replyNumber" placeholder="Consumer timeout at the end of topic">
+        <label for="consumer_timeout">Inactivity Timeout (seconds):</label>
+        <input type="number" class="form-control" id="consumer_timeout" min="10" max="60"
+               step="1" data-bind="value:replyNumber"
+               placeholder="Consumer timeout at the end of topic (default 10 second)">
     </div>
 
     <button type="button" class="btn btn-primary" id="consumer_submit">Consume</button>
