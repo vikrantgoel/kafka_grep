@@ -1,5 +1,13 @@
 $(document).ready(function() {
 
+    var reset = 0;
+
+    var clipboard = new Clipboard(document.getElementById('consumer_copy_to_clipboard'));
+    clipboard.on('error', function(e) {
+        console.error('Action:', e.action);
+        console.error('Trigger:', e.trigger);
+    });
+
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
@@ -16,7 +24,7 @@ $(document).ready(function() {
         $("#consumer_kafka_topic").val('');
         $("#consumer_group_id").val('');
         $("#consumer_timeout").val('');
-        $("#consumer_offset").val('latest');
+        $("#consumer_offset").val('earliest');
         $("#consumer_messages").val('');
     });
 
@@ -48,7 +56,7 @@ $(document).ready(function() {
         var consumerBootstrapServer = $("#consumer_bootstrap_server").val() || "localhost:9092";
         var consumerKafkaTopic = $("#consumer_kafka_topic").val() || "smartpricing-aux-test";
         var consumerOffset = $("#consumer_offset").val();
-        var consumerTimeout = parseInt($("#consumer_timeout").val() || "10");
+        var consumerTimeout = parseInt($("#consumer_timeout").val() || "5");
         var consumerGroupId = $("#consumer_group_id").val() || new Date().getTime();
 
         if (consumerTimeout < 1) {
@@ -57,8 +65,15 @@ $(document).ready(function() {
             consumerTimeout = 30
         }
 
+        while (reset != 0) {
+            console.log("waiting");
+            await sleep(5000);
+            console.log("wait finished");
+        }
+
         var timeoutEnd = new Date().getTime() + (consumerTimeout * 1000);
-        while (new Date().getTime() < timeoutEnd) {
+        reset = 1;
+        while (new Date().getTime() < timeoutEnd && reset == 1) {
 
             // Non blocking
             $.ajax({
@@ -73,7 +88,10 @@ $(document).ready(function() {
                 success: function(response) {
                     console.log(response);
                     if(JSON.stringify(response.consumer_messages) !== "null") {
-                        $("#consumer_messages").val($("#consumer_messages").val() + JSON.stringify(response.consumer_messages) + "\n");
+                        for (index in response.consumer_messages) {
+                            $("#consumer_messages").val($("#consumer_messages").val() + JSON.parse(JSON.stringify(response.consumer_messages[index])) + "\n\n");
+
+                        }
                         timeoutEnd = new Date().getTime() + (consumerTimeout * 1000);
                     }
                 },
@@ -85,6 +103,7 @@ $(document).ready(function() {
             await sleep(5000);
         }
         console.log("Timeout")
+        reset = 0;
     });
 
 
