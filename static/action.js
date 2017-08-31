@@ -1,7 +1,5 @@
 $(document).ready(function() {
 
-    var reset = 0;
-
     var clipboard = new Clipboard(document.getElementById('consumer_copy_to_clipboard'));
     clipboard.on('error', function(e) {
         console.error('Action:', e.action);
@@ -12,14 +10,14 @@ $(document).ready(function() {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    $("#producer_reset").click(function() {
+    $("#producer_reset").click(async function() {
         $("#producer_bootstrap_server").val('');
         $("#producer_kafka_topic").val('');
         $("#producer_message").val('');
         $("#producer_messages").val('');
     });
 
-    $("#consumer_reset").click(function() {
+    $("#consumer_reset").click(async function() {
         $("#consumer_bootstrap_server").val('');
         $("#consumer_kafka_topic").val('');
         $("#consumer_group_id").val('');
@@ -28,7 +26,7 @@ $(document).ready(function() {
         $("#consumer_messages").val('');
     });
 
-    $("#producer_submit").click(function() {
+    $("#producer_submit").click(async function() {
 
         var producerBootstrapServer = $("#producer_bootstrap_server").val() || "localhost:9092";
         var producerKafkaTopic = $("#producer_kafka_topic").val() || "smartpricing-aux-test";
@@ -52,7 +50,6 @@ $(document).ready(function() {
     });
 
     $("#consumer_submit").click(async function() {
-
         var consumerBootstrapServer = $("#consumer_bootstrap_server").val() || "localhost:9092";
         var consumerKafkaTopic = $("#consumer_kafka_topic").val() || "smartpricing-aux-test";
         var consumerOffset = $("#consumer_offset").val();
@@ -65,47 +62,20 @@ $(document).ready(function() {
             consumerTimeout = 30
         }
 
-        while (reset != 0) {
-            console.log("waiting");
-            await sleep(5000);
-            console.log("wait finished");
-        }
+        var url = "http://" + document.domain + ":" + location.port;
+        var socket = new io.connect(url + "/consumerSocket");
 
-        var timeoutEnd = new Date().getTime() + (consumerTimeout * 1000);
-        reset = 1;
-        while (new Date().getTime() < timeoutEnd && reset == 1) {
+        socket.emit("consumer_request", {consumer_bootstrap_server: consumerBootstrapServer,
+                                         consumer_kafka_topic: consumerKafkaTopic, consumer_offset: consumerOffset,
+                                         consumer_timeout: consumerTimeout, consumer_group_id: consumerGroupId});
 
-            // Non blocking
-            $.ajax({
-                url: '/consume',
-                type: 'POST',
-                data: {consumer_bootstrap_server: consumerBootstrapServer,
-                       consumer_kafka_topic: consumerKafkaTopic,
-                       consumer_offset: consumerOffset,
-                       consumer_timeout: consumerTimeout,
-                       consumer_group_id: consumerGroupId
-                      },
-                success: function(response) {
-                    console.log(response);
-                    if(JSON.stringify(response.consumer_messages) !== "null") {
-                        for (index in response.consumer_messages) {
-                            $("#consumer_messages").val($("#consumer_messages").val() + JSON.parse(JSON.stringify(response.consumer_messages[index])) + "\n\n");
-
-                        }
-                        timeoutEnd = new Date().getTime() + (consumerTimeout * 1000);
-                    }
-                },
-                error: function(error) {
-                    $("#consumer_messages").val(error);
-                },
-                timeout: 4000
-            });
-            await sleep(5000);
-        }
-        console.log("Timeout")
-        reset = 0;
+        socket.on('consumer_response', function(response) {
+            if(JSON.stringify(response.consumer_response) !== "null") {
+                for (index in response.consumer_response.kafka_output) {
+                   $("#consumer_messages").val($("#consumer_messages").val() + JSON.parse(JSON.stringify(response.consumer_response.kafka_output[index])) + "\n\n");
+                }
+            }
+        });
     });
-
-
 
 });
