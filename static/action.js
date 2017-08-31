@@ -21,7 +21,6 @@ $(document).ready(function() {
         $("#consumer_bootstrap_server").val('');
         $("#consumer_kafka_topic").val('');
         $("#consumer_group_id").val('');
-        $("#consumer_timeout").val('');
         $("#consumer_offset").val('earliest');
         $("#consumer_messages").val('');
     });
@@ -49,33 +48,38 @@ $(document).ready(function() {
         });
     });
 
-    $("#consumer_submit").click(async function() {
+    $(document).on('click', '#consumer_submit', function() {
         var consumerBootstrapServer = $("#consumer_bootstrap_server").val() || "localhost:9092";
         var consumerKafkaTopic = $("#consumer_kafka_topic").val() || "smartpricing-aux-test";
         var consumerOffset = $("#consumer_offset").val();
-        var consumerTimeout = parseInt($("#consumer_timeout").val() || "5");
         var consumerGroupId = $("#consumer_group_id").val() || new Date().getTime();
-
-        if (consumerTimeout < 1) {
-            consumerTimeout = 1
-        } else if (consumerTimeout > 30) {
-            consumerTimeout = 30
-        }
+        var consumerResponseEvent = 'consumer_response' + new Date().getTime();
 
         var url = "http://" + document.domain + ":" + location.port;
         var socket = new io.connect(url + "/consumerSocket");
 
         socket.emit("consumer_request", {consumer_bootstrap_server: consumerBootstrapServer,
                                          consumer_kafka_topic: consumerKafkaTopic, consumer_offset: consumerOffset,
-                                         consumer_timeout: consumerTimeout, consumer_group_id: consumerGroupId});
+                                         consumer_group_id: consumerGroupId,
+                                         consumer_response_event: consumerResponseEvent});
 
-        socket.on('consumer_response', function(response) {
+        $("#consumer_submit").html('Stop');
+        $("#consumer_submit").removeClass('btn-primary');
+        $("#consumer_submit").attr('id', 'consuming_submit');
+
+        socket.on(consumerResponseEvent, function(response) {
             if(JSON.stringify(response.consumer_response) !== "null") {
                 for (index in response.consumer_response.kafka_output) {
-                   $("#consumer_messages").val($("#consumer_messages").val() + JSON.parse(JSON.stringify(response.consumer_response.kafka_output[index])) + "\n\n");
+                   $("#consumer_messages").val($("#consumer_messages").val() + JSON.parse(JSON.stringify(response.consumer_response.kafka_output[index])) + "\n");
                 }
             }
         });
+    });
+
+    $(document).on('click', '#consuming_submit', function() {
+        $("#consuming_submit").html('Consume');
+        $("#consuming_submit").addClass('btn-primary');
+        $("#consuming_submit").attr('id', 'consumer_submit');
     });
 
 });
