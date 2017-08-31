@@ -68,6 +68,13 @@ def consumer_request(message):
         print "End of socket response"
 
 
+@socketio.on('disconnect_request', namespace='/consumerSocket')
+def disconnect_request():
+    print "Disconnect request"
+    global connection_flag
+    connection_flag = False
+
+
 @socketio.on('disconnect', namespace='/consumerSocket')
 def consumer_disconnect():
     print "disconnected"

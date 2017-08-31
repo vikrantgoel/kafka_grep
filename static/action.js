@@ -76,10 +76,18 @@ $(document).ready(function() {
         });
     });
 
-    $(document).on('click', '#consuming_submit', function() {
-        $("#consuming_submit").html('Consume');
-        $("#consuming_submit").addClass('btn-primary');
-        $("#consuming_submit").attr('id', 'consumer_submit');
+    $(document).on('click', '#consuming_submit', async function() {
+        var url = "http://" + document.domain + ":" + location.port;
+        var socket = new io.connect(url + "/consumerSocket");
+        socket.emit("disconnect_request");
+
+        $("#consuming_submit").html('Stopping...');
+        $("#consuming_submit").attr('id', 'stopping_submit');
+        await sleep(3000);
+
+        $("#stopping_submit").html('Consume');
+        $("#stopping_submit").addClass('btn-primary');
+        $("#stopping_submit").attr('id', 'consumer_submit');
     });
 
 });
