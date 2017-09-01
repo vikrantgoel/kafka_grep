@@ -106,13 +106,13 @@ def consume_kafka_and_emit_to_web_socket(bootstrap_servers, kafka_topic, consume
         consumer_response['consumer_group_id'] = consumer_group_id
         consumer_response['consumer_offset'] = consumer_offset
 
-        end_time = time.time() + 60
+        end_time = time.time() + 30
         print "Starting consumption"
         while time.time() < end_time and connection_flag:
             while True:
                 msg = c.poll(timeout=3.0)
                 if msg and not msg.error():
-                    end_time = time.time() + 60
+                    end_time = time.time() + 30
 
                     output = dict()
                     output[msg.offset()] = msg.value()

@@ -13,12 +13,13 @@ $(document).ready(function() {
         $("#consuming_submit").html('Stopping...');
         $("#consuming_submit").attr('id', 'stopping_submit');
         await sleep(3000);
-
+        socket.disconnect();
+        await sleep(5000);
         $("#stopping_submit").html('Consume');
         $("#stopping_submit").addClass('btn-primary');
         $("#stopping_submit").attr('id', 'consumer_submit');
 
-        socket.disconnect();
+
     }
 
     $("#producer_reset").click(async function() {
