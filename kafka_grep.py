@@ -2,9 +2,8 @@ import time
 import gevent
 from gevent import monkey
 from flask import Flask, render_template, request, jsonify
-from confluent_kafka import Producer
-from confluent_kafka import Consumer
-from flask_socketio import SocketIO
+from confluent_kafka import Producer, Consumer
+from flask_socketio import SocketIO, disconnect
 import traceback
 
 monkey.patch_all()
@@ -51,6 +50,7 @@ def consumer_request(message):
         consumer_bootstrap_server = message['consumer_bootstrap_server']
         consumer_kafka_topic = message['consumer_kafka_topic']
         consumer_response_event = message['consumer_response_event']
+        consumer_disconnect_event = message['consumer_disconnect_event']
         consumer_offset = "latest"
         if 'consumer_offset' in message:
             consumer_offset = message['consumer_offset']
@@ -60,7 +60,8 @@ def consumer_request(message):
 
         consume_kafka_and_emit_to_web_socket(consumer_bootstrap_server, consumer_kafka_topic,
                                              consumer_offset, consumer_group_id,
-                                             event_name=consumer_response_event,
+                                             response_event_name=consumer_response_event,
+                                             disconnect_event_name=consumer_disconnect_event,
                                              namespace='/consumerSocket')
     except:
         traceback.print_exc()
@@ -71,8 +72,7 @@ def consumer_request(message):
 @socketio.on('disconnect_request', namespace='/consumerSocket')
 def disconnect_request():
     print "Disconnect request"
-    global connection_flag
-    connection_flag = False
+    disconnect()
 
 
 @socketio.on('disconnect', namespace='/consumerSocket')
@@ -83,7 +83,8 @@ def consumer_disconnect():
 
 
 def consume_kafka_and_emit_to_web_socket(bootstrap_servers, kafka_topic, consumer_offset,
-                                         consumer_group_id, event_name, namespace):
+                                         consumer_group_id, response_event_name,
+                                         disconnect_event_name, namespace):
     """
     Consumes from the provided topic
     and emits to provided namespace
@@ -117,7 +118,8 @@ def consume_kafka_and_emit_to_web_socket(bootstrap_servers, kafka_topic, consume
                     output[msg.offset()] = msg.value()
                     consumer_response['kafka_output'] = output
 
-                    socketio.emit(event_name, {'consumer_response': consumer_response}, namespace=namespace)
+                    socketio.emit(response_event_name, {'consumer_response': consumer_response}, namespace=namespace)
+                    gevent.sleep(0)
                     gevent.sleep(0)
                     print "Consumed:" + str(msg.value())
                 else:
@@ -127,6 +129,7 @@ def consume_kafka_and_emit_to_web_socket(bootstrap_servers, kafka_topic, consume
         traceback.print_exc()
     finally:
         print "End of consumption"
+        socketio.emit(disconnect_event_name, namespace=namespace)
         connection_flag = False
         c.close()
 
